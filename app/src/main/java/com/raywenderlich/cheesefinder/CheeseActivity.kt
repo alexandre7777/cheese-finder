@@ -34,18 +34,21 @@ import android.text.Editable
 import android.text.TextWatcher
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_cheeses.*
 import java.util.concurrent.TimeUnit
 
 class CheeseActivity : BaseSearchActivity() {
 
+    private lateinit var disposable: Disposable
+
     override fun onStart() {
         super.onStart()
         // 1
         val searchTextObservable = createTextChangeObservable()
 
-        searchTextObservable
+        disposable = searchTextObservable
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .doOnNext { showProgress() }
                 .observeOn(Schedulers.io())
@@ -56,6 +59,13 @@ class CheeseActivity : BaseSearchActivity() {
                     hideProgress()
                     showResult(it)
                 }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (!disposable.isDisposed) {
+            disposable.dispose()
+        }
     }
 
     // 1
